@@ -19,16 +19,14 @@ class mDermaga extends Model
 
     protected $dates = ['deleted_at'];
 
-    public function DPelabuhan(){
-        return $this->belongsTo('App\Models\mPelabuhan','id_pelabuhan');
+    public function DPelabuhan()
+    {
+        return $this->belongsTo('App\Models\mPelabuhan', 'id_pelabuhan');
     }
 
-    public function DDetailJadwalAsal(){
-        return $this->hasMany('App\Models\mDetailJadwal','id_dermaga_asal');
-    }
-
-    public function DDetailJadwalTujuan(){
-        return $this->hasMany('App\Models\mDetailJadwal','id_dermaga_tujuan');
+    public function DJadwal()
+    {
+        return $this->hasMany('App\Models\mJadwal','id_dermaga');
     }
 
 }

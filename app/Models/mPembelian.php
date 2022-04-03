@@ -27,19 +27,14 @@ class mPembelian extends Model
 
     protected $dates = ['deleted_at'];
 
-    public function PJadwal()
-    {
-        return $this->belongsTo('App\Models\mDetailJadwal', 'id_jadwal');
-    }
-
     public function PUser()
     {
         return $this->belongsTo('App\Models\mUser', 'id_user');
     }
 
-    public function PGologan()
+    public function PDetailHarga()
     {
-        return $this->belongsTo('App\Models\mDetailGolongan', 'id_golongan');
+        return $this->belongsTo('App\Models\mDetailHarga', 'id_jadwal');
     }
 
     public function PMetodePembayaran()

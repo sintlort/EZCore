@@ -23,14 +23,14 @@ class mDetailPembelian extends Model
 
     protected $dates = ['deleted_at'];
 
-    public function DPCard()
-    {
-        return $this->belongsTo('App\Models\mCard', 'id_card');
-    }
-
     public function DPPembelian()
     {
         return $this->belongsTo('App\Models\mPembelian','id_pembelian');
+    }
+
+    public function DPCard()
+    {
+        return $this->belongsTo('App\Models\mCard','id_card');
     }
 
 

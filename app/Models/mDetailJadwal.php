@@ -13,32 +13,32 @@ class mDetailJadwal extends Model
     protected $table = "tb_detail_jadwal";
 
     protected $fillable = [
-        'id_jadwal',
-        'hari',
-        'status',
-        'id_dermaga_asal',
-        'id_dermaga_tujuan',
+        'id_jadwal_asal',
+        'id_jadwal_tujuan',
+        'estimasi_waktu',
+        'id_kapal',
+        'tanggal',
     ];
 
     protected $dates = ['deleted_at'];
 
-    public function DJJadwal()
+    public function DJJadwalAsal()
     {
-        return $this->belongsTo('App\Models\mJadwal', 'id_jadwal');
+        return $this->belongsTo('App\Models\mJadwal', 'id_jadwal_asal');
     }
 
-    public function DJDermagaAsal()
+    public function DJJadwalTujuan()
     {
-        return $this->belongsTo('App\Models\mDermaga', 'id_dermaga_asal');
+        return $this->belongsTo('App\Models\mJadwal', 'id_jadwal_tujuan');
     }
 
-    public function DJDermagaTujuan()
+    public function DJDetailHarga()
     {
-        return $this->belongsTo('App\Models\mDermaga', 'id_dermaga_tujuan');
+        return $this->hasMany('App\Models\mDetailHarga', 'id_detail_jadwal');
     }
 
-    public function DJPembelian()
+    public function DJKapal()
     {
-        return $this->hasMany('App\Models\mPembelian','id_jadwal');
+        return $this->belongsTo('App\Models\mKapal','id_kapal');
     }
 }

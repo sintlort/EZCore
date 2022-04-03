@@ -26,7 +26,7 @@ class mKapal extends Model
 
     public function KJadwal()
     {
-        return $this->hasMany('App\Models\mJadwal', 'id_kapal');
+        return $this->hasMany('App\Models\mDetailJadwal', 'id_kapal');
     }
 
     public function KGolongan()

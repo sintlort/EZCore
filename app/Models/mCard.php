@@ -16,10 +16,11 @@ class mCard extends Model
         'card'
     ];
 
-    public function CDetailPembelian(){
+    protected $dates = ['deleted_at'];
+
+    public function CDPembelian ()
+    {
         return $this->hasMany('App\Models\mDetailPembelian','id_card');
     }
-
-    protected $dates = ['deleted_at'];
 
 }
