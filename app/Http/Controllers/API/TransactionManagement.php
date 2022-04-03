@@ -139,6 +139,14 @@ class TransactionManagement extends Controller
 
     public function checkTicket(Request $request)
     {
-        
+        $ticket_number = decrypt($request->ticket_number);
+        $data = mDetailPembelian::where('kode_tiket',$ticket_number)->where('status','Not Used')->first();
+        if(!empty($data)){
+            $data->status = "Used";
+            $data->save();
+            return response()->json(["message"=>'success','data'=>$data],200);
+        } else {
+            return response()->json(["message"=>"not found",'data'=>null], 200);
+        }
     }
 }

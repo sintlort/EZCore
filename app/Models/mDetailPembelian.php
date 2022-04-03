@@ -11,6 +11,8 @@ class mDetailPembelian extends Model
 
     protected $table = "tb_detail_pembelian";
 
+    protected $primaryKey = "id_detail_pembelian";
+
     protected $fillable = [
         'id_pembelian',
         'id_card',

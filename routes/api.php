@@ -49,6 +49,7 @@ Route::middleware(['auth:sanctum'])->group(function (){
         Route::POST('transaction/commited', 'transactionCommited');
         Route::POST('transaction/commited/penumpang', 'transactionCommitedForPenumpang');
         Route::POST('image/upload ', 'imageUpload');
+        Route::post('check/ticket','checkTicket');
     });
 });
 
