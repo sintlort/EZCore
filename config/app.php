@@ -178,6 +178,7 @@ return [
         App\Providers\RouteServiceProvider::class,
         App\Providers\UserServiceProvider::class,
 
+        \Barryvdh\DomPDF\ServiceProvider::class,
     ],
 
     /*

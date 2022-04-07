@@ -6,10 +6,15 @@
     "license": "MIT",
     "require": {
         "php": "^8.0.2",
+        "ext-gd": "*",
+        "barryvdh/laravel-dompdf": "^1.0",
+        "dompdf/dompdf": "^1.2",
+        "goodnesskay/laravelpdfviewer": "^1.0",
         "guzzlehttp/guzzle": "^7.2",
         "laravel/framework": "^9.2",
         "laravel/sanctum": "^2.14.1",
-        "laravel/tinker": "^2.7"
+        "laravel/tinker": "^2.7",
+        "simplesoftwareio/simple-qrcode": "~4"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",

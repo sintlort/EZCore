@@ -32,6 +32,10 @@ class mPembelian extends Model
         return $this->belongsTo('App\Models\mUser', 'id_user');
     }
 
+    public function PDetailPembelian(){
+        return $this->hasMany('App\Models\mDetailPembelian','id_pembelian');
+    }
+
     public function PDetailHarga()
     {
         return $this->belongsTo('App\Models\mDetailHarga', 'id_jadwal');

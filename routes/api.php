@@ -3,6 +3,7 @@
 use App\Http\Controllers\API\AccountManagement;
 use App\Http\Controllers\API\ScheduleManagement;
 use App\Http\Controllers\API\TransactionManagement;
+use App\Http\Controllers\API\ReviewManagement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -18,38 +19,45 @@ use Illuminate\Support\Facades\Route;
 */
 
 
+Route::controller(AccountManagement::class)->group(function () {
+    Route::post('/login', 'login');
+    Route::post('/register', 'register');
 
-
-Route::controller(AccountManagement::class)->group(function (){
-    Route::post('/login','login');
-    Route::post('/register','register');
-
-    Route::middleware(['auth:sanctum'])->group(function (){
-        Route::get('/user','user');
-        Route::post('/logout','logout');
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::get('/user', 'user');
+        Route::post('/logout', 'logout');
     });
 });
 
-Route::middleware(['auth:sanctum'])->group(function (){
-    Route::controller(TransactionManagement::class)->group(function (){
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::controller(TransactionManagement::class)->group(function () {
         Route::get('transaction/recently', 'getTransactionRecently');
         Route::get('transaction/history', 'getTransactionHistory');
-        Route::POST('transaction/my/penumpang','getPenumpang');
-        Route::POST('transaction/cancel','transactionCanceled');
+        Route::POST('transaction/my/penumpang', 'getPenumpang');
+        Route::POST('transaction/cancel', 'transactionCanceled');
+        Route::POST('refresh/transaction','getTransactionData');
     });
 
-    Route::controller(ScheduleManagement::class)->group(function (){
+    Route::controller(ScheduleManagement::class)->group(function () {
         Route::get('pelabuhan/all', 'indexPelabuhan');
         Route::get('golongan/all', 'indexGolongan');
         Route::post('schedule/search', 'searchTestv1');
     });
 
-    Route::controller(TransactionManagement::class)->group(function (){
+    Route::controller(TransactionManagement::class)->group(function () {
         Route::get('metode/all', 'metodePembayaran');
         Route::POST('transaction/commited', 'transactionCommited');
         Route::POST('transaction/commited/penumpang', 'transactionCommitedForPenumpang');
         Route::POST('image/upload ', 'imageUpload');
-        Route::post('check/ticket','checkTicket');
+        Route::POST('image2/upload ', 'imageUpload');
+        Route::post('check/ticket', 'checkTicket');
+        Route::post('check/ticket/data','getTicketData');
+    });
+
+    Route::controller(ReviewManagement::class)->group(function () {
+        Route::POST('review/post','postReview');
+        Route::POST('review/get','getReview');
+        Route::POST('review/delete','hapusReview');
     });
 });
 

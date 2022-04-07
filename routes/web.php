@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\API\TransactionManagement;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -15,5 +16,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
+});
+
+Route::controller(TransactionManagement::class)->group(function () {
+    Route::get('pdf/check/{name}', 'checkPDF');
 });
 
