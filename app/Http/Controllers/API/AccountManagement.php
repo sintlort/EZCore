@@ -27,9 +27,9 @@ class AccountManagement extends Controller
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
             $token = $user->createToken('user-access');
-            return response()->json(['message' => 'success', 'token' => $token->plainTextToken, 'type_account'=>Auth::user()->role], 200);
+            return response()->json(['message' => 'success', 'token' => $token->plainTextToken, 'type_account'=>Auth::user()->role, 'user'=>$user], 200);
         }
-        return response()->json(['message' => 'failed', 'token' => null], 400);
+        return response()->json(['message' => 'failed', 'token' => null], 200);
     }
 
     public function register(Request $request)

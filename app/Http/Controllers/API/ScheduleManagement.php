@@ -21,10 +21,7 @@ class ScheduleManagement extends Controller
     public function indexPelabuhan()
     {
         $pelabuhan = mPelabuhan::all();
-        if (!$pelabuhan->isEmpty()) {
-            return response()->json($pelabuhan, 200);
-        }
-        return response()->json(['message' => 'bad request'], 400);
+        return response()->json($pelabuhan, 200);
     }
 
     public function indexGolongan(Request $request)
@@ -38,8 +35,7 @@ class ScheduleManagement extends Controller
         if ($request->golongan != "") {
             $detailGolongan = mDetailGolongan::where('id_golongan', $request->golongan)->pluck('id_kapal');
             $kapal = mKapal::whereIn('id', $detailGolongan)->where('tipe_kapal', 'feri')->pluck('id');
-            $jadwal = mJadwal::whereIn('id_kapal', $kapal)->where('id_asal_pelabuhan', $request->asal_pelabuhan)
-                ->where('id_tujuan_pelabuhan', $request->tujuan_pelabuhan)->pluck('id');
+            $jadwal = mJadwal::whereIn('id_kapal', $kapal)->where('id_asal_pelabuhan', $request->asal_pelabuhan)->where('id_tujuan_pelabuhan', $request->tujuan_pelabuhan)->pluck('id');
             $day = MyDateTime::DateToDayConverter($request->date);
             $schedule = mDetailJadwal::with('DJJadwal')->whereIn('id_jadwal', $jadwal)->where('hari', strtolower($day))->where('status', 'aktif')->get();
             return response()->json($schedule, 200);
@@ -109,32 +105,32 @@ class ScheduleManagement extends Controller
 
         $idP1 = $request->asal_pelabuhan;
         $idP2 = $request->tujuan_pelabuhan;
-        $idDP1 = mDermaga::where('id_pelabuhan',$idP1)->pluck('id');
-        $idDP2 = mDermaga::where('id_pelabuhan',$idP2)->pluck('id');
-        $idJadwal1 = mJadwal::whereIn('id_dermaga',$idDP1)->pluck('id');
-        $idJadwal2 = mJadwal::whereIn('id_dermaga',$idDP2)->pluck('id');
+        $idDP1 = mDermaga::where('id_pelabuhan', $idP1)->pluck('id');
+        $idDP2 = mDermaga::where('id_pelabuhan', $idP2)->pluck('id');
+        $idJadwal1 = mJadwal::whereIn('id_dermaga', $idDP1)->pluck('id');
+        $idJadwal2 = mJadwal::whereIn('id_dermaga', $idDP2)->pluck('id');
         $tanggal = $request->date;
         $dataGolongan = $request->id_golongan;
         $type = $request->tipe_kapal;
 
-        if($type == 'feri'){
+        if ($type == 'feri') {
             $golongan = mGolongan::find($dataGolongan);
-            $detailGolongan = mDetailGolongan::where('id_golongan',$golongan->id)->pluck('id');
-            $harga = mHarga::where('id_pelabuhan_asal',$idP1)->where('id_pelabuhan_tujuan',$idP2)->whereIn('id_golongan',$detailGolongan)->where('status','aktif')->pluck('id');
-            $data1 = mDetailJadwal::with('DJJadwalAsal','DJJadwalTujuan')->whereIn('id_jadwal_asal',$idJadwal1)->whereIn('id_jadwal_tujuan',$idJadwal2)->where('tanggal','2022-04-04')->pluck('id');
-            $detail = mDetailHarga::whereIn('id_harga',$harga)->whereIn('id_detail_jadwal',$data1)->with('DHHarga','DHJadwal')->get();
+            $detailGolongan = mDetailGolongan::where('id_golongan', $golongan->id)->pluck('id');
+            $harga = mHarga::where('id_pelabuhan_asal', $idP1)->where('id_pelabuhan_tujuan', $idP2)->whereIn('id_golongan', $detailGolongan)->where('status', 'aktif')->pluck('id');
+            $data1 = mDetailJadwal::with('DJJadwalAsal', 'DJJadwalTujuan')->whereIn('id_jadwal_asal', $idJadwal1)->whereIn('id_jadwal_tujuan', $idJadwal2)->where('tanggal', $tanggal)->pluck('id');
+            $detail = mDetailHarga::whereIn('id_harga', $harga)->whereIn('id_detail_jadwal', $data1)->with('DHHarga', 'DHJadwal')->get();
             $schedule = $detail;
             foreach ($schedule as $index => $data) {
                 $day = MyDateTime::DateToDayConverter($data->DHJadwal->tanggal);
                 $schedule[$index]->nama_asal = $data->DHJadwal->DJJadwalAsal->JDermaga->DPelabuhan->nama_pelabuhan;
                 $schedule[$index]->nama_tujuan = $data->DHJadwal->DJJadwalTujuan->JDermaga->DPelabuhan->nama_pelabuhan;
                 $schedule[$index]->kode_pelabuhan_asal = $data->DHJadwal->DJJadwalAsal->JDermaga->DPelabuhan->kode_pelabuhan;
-                $schedule[$index]->kode_pelabuhan_tujuan =$data->DHJadwal->DJJadwalTujuan->JDermaga->DPelabuhan->kode_pelabuhan;
+                $schedule[$index]->kode_pelabuhan_tujuan = $data->DHJadwal->DJJadwalTujuan->JDermaga->DPelabuhan->kode_pelabuhan;
                 $schedule[$index]->status_asal = $data->DHJadwal->DJJadwalAsal->JDermaga->DPelabuhan->status;
-                $schedule[$index]->status_tujuan =$data->DHJadwal->DJJadwalTujuan->JDermaga->DPelabuhan->status;
+                $schedule[$index]->status_tujuan = $data->DHJadwal->DJJadwalTujuan->JDermaga->DPelabuhan->status;
                 $schedule[$index]->dermaga_asal = $data->DHJadwal->DJJadwalAsal->JDermaga->nama_dermaga;
                 $schedule[$index]->dermaga_tujuan = $data->DHJadwal->DJJadwalTujuan->JDermaga->nama_dermaga;
-                $schedule[$index]->estimasi_waktu = $data->DHJadwal->estimasi_waktu.' Menit';
+                $schedule[$index]->estimasi_waktu = $data->DHJadwal->estimasi_waktu . ' Menit';
                 $schedule[$index]->tanggal = $data->DHJadwal->tanggal;
                 $schedule[$index]->hari = $day;
                 $schedule[$index]->harga = $data->DHHarga->harga;
@@ -147,22 +143,22 @@ class ScheduleManagement extends Controller
         } else {
             $dataGolongan = 1;
             $golongan = mGolongan::find($dataGolongan);
-            $detailGolongan = mDetailGolongan::where('id_golongan',$golongan->id)->pluck('id');
-            $harga = mHarga::where('id_pelabuhan_asal',$idP1)->where('id_pelabuhan_tujuan',$idP2)->whereIn('id_golongan',$detailGolongan)->where('status','aktif')->pluck('id');
-            $data1 = mDetailJadwal::with('DJJadwalAsal','DJJadwalTujuan')->whereIn('id_jadwal_asal',$idJadwal1)->whereIn('id_jadwal_tujuan',$idJadwal2)->where('tanggal','2022-04-04')->pluck('id');
-            $detail = mDetailHarga::whereIn('id_harga',$harga)->whereIn('id_detail_jadwal',$data1)->with('DHHarga','DHJadwal')->get();
+            $detailGolongan = mDetailGolongan::where('id_golongan', $golongan->id)->pluck('id');
+            $harga = mHarga::where('id_pelabuhan_asal', $idP1)->where('id_pelabuhan_tujuan', $idP2)->whereIn('id_golongan', $detailGolongan)->where('status', 'aktif')->pluck('id');
+            $data1 = mDetailJadwal::with('DJJadwalAsal', 'DJJadwalTujuan')->whereIn('id_jadwal_asal', $idJadwal1)->whereIn('id_jadwal_tujuan', $idJadwal2)->where('tanggal', '2022-04-04')->pluck('id');
+            $detail = mDetailHarga::whereIn('id_harga', $harga)->whereIn('id_detail_jadwal', $data1)->with('DHHarga', 'DHJadwal')->get();
             $schedule = $detail;
             foreach ($schedule as $index => $data) {
                 $day = MyDateTime::DateToDayConverter($data->DHJadwal->tanggal);
                 $schedule[$index]->nama_asal = $data->DHJadwal->DJJadwalAsal->JDermaga->DPelabuhan->nama_pelabuhan;
                 $schedule[$index]->nama_tujuan = $data->DHJadwal->DJJadwalTujuan->JDermaga->DPelabuhan->nama_pelabuhan;
                 $schedule[$index]->kode_pelabuhan_asal = $data->DHJadwal->DJJadwalAsal->JDermaga->DPelabuhan->kode_pelabuhan;
-                $schedule[$index]->kode_pelabuhan_tujuan =$data->DHJadwal->DJJadwalTujuan->JDermaga->DPelabuhan->kode_pelabuhan;
+                $schedule[$index]->kode_pelabuhan_tujuan = $data->DHJadwal->DJJadwalTujuan->JDermaga->DPelabuhan->kode_pelabuhan;
                 $schedule[$index]->status_asal = $data->DHJadwal->DJJadwalAsal->JDermaga->DPelabuhan->status;
-                $schedule[$index]->status_tujuan =$data->DHJadwal->DJJadwalTujuan->JDermaga->DPelabuhan->status;
+                $schedule[$index]->status_tujuan = $data->DHJadwal->DJJadwalTujuan->JDermaga->DPelabuhan->status;
                 $schedule[$index]->dermaga_asal = $data->DHJadwal->DJJadwalAsal->JDermaga->nama_dermaga;
                 $schedule[$index]->dermaga_tujuan = $data->DHJadwal->DJJadwalTujuan->JDermaga->nama_dermaga;
-                $schedule[$index]->estimasi_waktu = $data->DHJadwal->estimasi_waktu.' Menit';
+                $schedule[$index]->estimasi_waktu = $data->DHJadwal->estimasi_waktu . ' Menit';
                 $schedule[$index]->tanggal = $data->DHJadwal->tanggal;
                 $schedule[$index]->hari = $day;
                 $schedule[$index]->harga = $data->DHHarga->harga;

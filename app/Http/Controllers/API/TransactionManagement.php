@@ -4,7 +4,11 @@ namespace App\Http\Controllers\API;
 
 use App\Helpers\MyDateTime;
 use App\Http\Controllers\Controller;
+use App\Models\mDetailHarga;
+use App\Models\mDetailJadwal;
 use App\Models\mDetailPembelian;
+use App\Models\mHakKapal;
+use App\Models\mKapal;
 use App\Models\mMetodePembayaran;
 use App\Models\mPembelian;
 use Carbon\Carbon;
@@ -67,15 +71,21 @@ class TransactionManagement extends Controller
 
     public function transactionCommited(Request $request)
     {
-        $pembelian = mPembelian::create([
-            'id_metode_pembayaran' => $request->id_metode_pembayaran,
-            'id_jadwal' => $request->id_detail,
-            'id_user' => Auth::user()->id,
-            'tanggal' => $request->tanggal,
-            'status' => 'menunggu pembayaran',
-        ]);
+        $getIDetail = mDetailHarga::with('DHHarga')->where('id',$request->id_detail)->first();
 
-        return response()->json(['message' => 'success', 'data' => $pembelian], 200);
+        if(!empty($getIDetail)) {
+            $pembelian = mPembelian::create([
+                'id_metode_pembayaran' => $request->id_metode_pembayaran,
+                'id_jadwal' => $request->id_detail,
+                'id_user' => Auth::user()->id,
+                'tanggal' => $request->tanggal,
+                'total_harga' => $request->jumlah_penumpang * $getIDetail->DHHarga->harga,
+                'status' => 'menunggu pembayaran',
+            ]);
+            return response()->json(['message' => 'success', 'data' => $pembelian], 200);
+        } else {
+            return response()->json(['message' => 'failed', 'data' => null], 200);
+        }
     }
 
     public function getTransactionData(Request $request)
@@ -96,7 +106,7 @@ class TransactionManagement extends Controller
         $transaction->metode_pembayaran = $transaction->PMetodePembayaran->nama_metode;
         $transaction->nomor_rekening = $transaction->PMetodePembayaran->nomor_rekening;
         $transaction->hari = $day;
-        $transaction->harga = $transaction->PDetailHarga->DHHarga->harga;
+        $transaction->harga = $transaction->total_harga;
         $transaction->nama_kapal = $transaction->PDetailHarga->DHJadwal->DJKapal->nama_kapal;
         $time = Carbon::createFromFormat("H:i:s", $transaction->PDetailHarga->DHJadwal->DJJadwalAsal->waktu);
         $transaction->waktu_berangkat_asal = $time->format('H:i');
@@ -140,7 +150,7 @@ class TransactionManagement extends Controller
             $transaction[$index]->metode_pembayaran = $data->PMetodePembayaran->nama_metode;
             $transaction[$index]->nomor_rekening = $data->PMetodePembayaran->nomor_rekening;
             $transaction[$index]->hari = $day;
-            $transaction[$index]->harga = $data->PDetailHarga->DHHarga->harga;
+            $transaction[$index]->harga = $data->total_harga;
             $transaction[$index]->nama_kapal = $data->PDetailHarga->DHJadwal->DJKapal->nama_kapal;
             $time = Carbon::createFromFormat("H:i:s", $data->PDetailHarga->DHJadwal->DJJadwalAsal->waktu);
             $transaction[$index]->waktu_berangkat_asal = $time->format('H:i');
@@ -169,7 +179,7 @@ class TransactionManagement extends Controller
             $transaction[$index]->metode_pembayaran = $data->PMetodePembayaran->nama_metode;
             $transaction[$index]->nomor_rekening = $data->PMetodePembayaran->nomor_rekening;
             $transaction[$index]->hari = $day;
-            $transaction[$index]->harga = $data->PDetailHarga->DHHarga->harga;
+            $transaction[$index]->harga = $data->total_harga;
             $transaction[$index]->nama_kapal = $data->PDetailHarga->DHJadwal->DJKapal->nama_kapal;
             $time = Carbon::createFromFormat("H:i:s", $data->PDetailHarga->DHJadwal->DJJadwalAsal->waktu);
             $transaction[$index]->waktu_berangkat_asal = $time->format('H:i');
@@ -192,11 +202,15 @@ class TransactionManagement extends Controller
         $ticket_number = $request->ticket_number;
 
         $userID = Auth::user()->id;
-        $pembelianData = mPembelian::where('id_user', $userID)->where('tanggal', $request->tanggal)->pluck('id');
+        $idKapal = mHakKapal::where('id_user',$userID)->pluck('id_kapal');
+        $dataJadwal = mDetailJadwal::whereIn('id_kapal',$idKapal)->pluck('id');
+        $dataDetailHarga = mDetailHarga::whereIn('id_detail_jadwal',$dataJadwal)->pluck('id');
+        $pembelianData = mPembelian::whereIn('id_jadwal',$dataDetailHarga)->where('tanggal', $request->tanggal)->pluck('id');
         $data = mDetailPembelian::where('kode_tiket', $ticket_number)->whereIn('id_pembelian', $pembelianData)->where('status', 'Not Used')->first();
         if (!empty($data)) {
             $data->status = "Used";
             $data->save();
+            $data = mDetailPembelian::where('kode_tiket', $ticket_number)->whereIn('id_pembelian', $pembelianData)->where('status', 'Used')->first();
             return response()->json(["message" => 'success', 'data' => $data], 200);
         } else {
             return response()->json(["message" => "not found", 'data' => null], 200);

@@ -11,12 +11,14 @@
 </head>
 
 <body>
-@foreach($pembelian2->PDetailPembelian as $detail)
+@foreach($pembelian2->PDetailPembelian as $index => $detail)
     <br>
     <br>
     <img
         src="data:image/png;base64, {!! base64_encode(QrCode::format('png')->size(160)->generate($detail->kode_tiket)) !!} ">
-    <div class="page_break"></div>
+    @if(array_key_last($detail) != $index)
+        <div class="page_break"></div>
+    @endif
 @endforeach
 </body>
 </html>
