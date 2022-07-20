@@ -30,7 +30,7 @@ class mDetailGolongan extends Model
         return $this->belongsTo('App\Models\mKapal','id_kapal');
     }
 
-    public function DGPembelian()
+    public function DGHarga()
     {
         return $this->hasMany('App\Models\mPembelian','id_golongan');
     }

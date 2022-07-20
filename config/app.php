@@ -179,6 +179,7 @@ return [
         App\Providers\UserServiceProvider::class,
 
         \Barryvdh\DomPDF\ServiceProvider::class,
+        Kawankoding\Fcm\FcmServiceProvider::class,
     ],
 
     /*
@@ -194,6 +195,7 @@ return [
 
     'aliases' => Facade::defaultAliases()->merge([
         'MyDateTime' => \App\Helpers\MyDateTime::class,
+        'Fcm' => Kawankoding\Fcm\FcmFacade::class,
     ])->toArray(),
 
 ];

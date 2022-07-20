@@ -13,6 +13,7 @@ use App\Models\mHarga;
 use App\Models\mJadwal;
 use App\Models\mKapal;
 use App\Models\mPelabuhan;
+use App\Models\mPembelian;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -118,7 +119,16 @@ class ScheduleManagement extends Controller
             $detailGolongan = mDetailGolongan::where('id_golongan', $golongan->id)->pluck('id');
             $harga = mHarga::where('id_pelabuhan_asal', $idP1)->where('id_pelabuhan_tujuan', $idP2)->whereIn('id_golongan', $detailGolongan)->where('status', 'aktif')->pluck('id');
             $data1 = mDetailJadwal::with('DJJadwalAsal', 'DJJadwalTujuan')->whereIn('id_jadwal_asal', $idJadwal1)->whereIn('id_jadwal_tujuan', $idJadwal2)->where('tanggal', $tanggal)->pluck('id');
-            $detail = mDetailHarga::whereIn('id_harga', $harga)->whereIn('id_detail_jadwal', $data1)->with('DHHarga', 'DHJadwal')->get();
+            $idDetailHarga = mDetailHarga::whereIn('id_harga', $harga)->whereIn('id_detail_jadwal', $data1)->with('DHHarga', 'DHJadwal')->get();
+            $idSchedule = array();
+            foreach ($idDetailHarga as $det) {
+                $jumlahPembelian = mPembelian::where('id_jadwal', $det->id)->count();
+                $jumlahTiket = $det->DHHarga->HDetailGolongan->jumlah;
+                if($jumlahPembelian < $jumlahTiket){
+                    $idSchedule[] = $det->id;
+                }
+            }
+            $detail = mDetailHarga::whereIn('id_harga', $harga)->whereIn('id_detail_jadwal', $data1)->whereIn('id', $idSchedule)->with('DHHarga', 'DHJadwal')->get();
             $schedule = $detail;
             foreach ($schedule as $index => $data) {
                 $day = MyDateTime::DateToDayConverter($data->DHJadwal->tanggal);
@@ -135,6 +145,7 @@ class ScheduleManagement extends Controller
                 $schedule[$index]->hari = $day;
                 $schedule[$index]->harga = $data->DHHarga->harga;
                 $schedule[$index]->nama_kapal = $data->DHJadwal->DJKapal->nama_kapal;
+                $schedule[$index]->tersisa = mPembelian::where('id_jadwal', $data->id)->count() . " / " . $data->DHHarga->HDetailGolongan->jumlah;
                 $time = Carbon::createFromFormat("H:i:s", $data->DHJadwal->DJJadwalAsal->waktu);
                 $schedule[$index]->waktu_berangkat_asal = $time->format('H:i');
                 $time->addMinutes($data->DHJadwal->estimasi_waktu);
@@ -145,8 +156,17 @@ class ScheduleManagement extends Controller
             $golongan = mGolongan::find($dataGolongan);
             $detailGolongan = mDetailGolongan::where('id_golongan', $golongan->id)->pluck('id');
             $harga = mHarga::where('id_pelabuhan_asal', $idP1)->where('id_pelabuhan_tujuan', $idP2)->whereIn('id_golongan', $detailGolongan)->where('status', 'aktif')->pluck('id');
-            $data1 = mDetailJadwal::with('DJJadwalAsal', 'DJJadwalTujuan')->whereIn('id_jadwal_asal', $idJadwal1)->whereIn('id_jadwal_tujuan', $idJadwal2)->where('tanggal', '2022-04-04')->pluck('id');
-            $detail = mDetailHarga::whereIn('id_harga', $harga)->whereIn('id_detail_jadwal', $data1)->with('DHHarga', 'DHJadwal')->get();
+            $data1 = mDetailJadwal::with('DJJadwalAsal', 'DJJadwalTujuan')->whereIn('id_jadwal_asal', $idJadwal1)->whereIn('id_jadwal_tujuan', $idJadwal2)->where('tanggal', $tanggal)->pluck('id');
+            $idDetailHarga = mDetailHarga::whereIn('id_harga', $harga)->whereIn('id_detail_jadwal', $data1)->with('DHHarga', 'DHJadwal')->get();
+            $idSchedule = array();
+            foreach ($idDetailHarga as $det) {
+                $jumlahPembelian = mPembelian::where('id_jadwal', $det->id)->count();
+                $jumlahTiket = $det->DHHarga->HDetailGolongan->jumlah;
+                if($jumlahPembelian < $jumlahTiket){
+                    $idSchedule[] = $det->id;
+                }
+            }
+            $detail = mDetailHarga::whereIn('id_harga', $harga)->whereIn('id_detail_jadwal', $data1)->whereIn('id', $idSchedule)->with('DHHarga', 'DHJadwal')->get();
             $schedule = $detail;
             foreach ($schedule as $index => $data) {
                 $day = MyDateTime::DateToDayConverter($data->DHJadwal->tanggal);
@@ -163,6 +183,7 @@ class ScheduleManagement extends Controller
                 $schedule[$index]->hari = $day;
                 $schedule[$index]->harga = $data->DHHarga->harga;
                 $schedule[$index]->nama_kapal = $data->DHJadwal->DJKapal->nama_kapal;
+                $schedule[$index]->tersisa = mPembelian::where('id_jadwal', $data->id)->count() . " / " . $data->DHHarga->HDetailGolongan->jumlah;
                 $time = Carbon::createFromFormat("H:i:s", $data->DHJadwal->DJJadwalAsal->waktu);
                 $schedule[$index]->waktu_berangkat_asal = $time->format('H:i');
                 $time->addMinutes($data->DHJadwal->estimasi_waktu);

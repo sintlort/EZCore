@@ -26,6 +26,14 @@ Route::controller(AccountManagement::class)->group(function () {
     Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/user', 'user');
         Route::post('/logout', 'logout');
+        Route::post('/edit', 'edit');
+        Route::post('/edit/password', 'editPassword');
+        Route::post('/edit/image', 'updateImage');
+        Route::get('/notification/current', 'currentNotification');
+        Route::get('/notification/archived', 'archivedNotification');
+        Route::post('/notification/update', 'notificationUpdate');
+        Route::post('/receive/fcm', 'receiveFCMToken');
+        Route::get('/send/fcm', 'sendNotificationTest');
     });
 });
 
